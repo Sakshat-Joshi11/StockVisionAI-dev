@@ -1,0 +1,105 @@
+Data Flow Through the System
+
+1. Data Ingestion
+
+Step 1.1: API Request:
+
+A scheduled trigger (e.g., CloudWatch or EventBridge) activates an AWS Lambda function.
+
+The Lambda function sends an HTTP request to the Stock Market API (e.g., Alpha Vantage, Yahoo Finance) to fetch real-time or historical stock data.
+
+Step 1.2: Store Raw Data:
+
+The fetched data is validated for basic errors (e.g., malformed records, missing fields) by the same Lambda function.
+
+Valid data is uploaded to the S3 Raw Data Bucket in JSON or CSV format.
+
+2. Data Processing
+
+Step 2.1: Event Trigger for Processing:
+
+The addition of new data to the S3 Raw Data Bucket triggers another AWS Lambda function.
+
+This Lambda function initiates the AWS Glue ETL job.
+
+Step 2.2: Transform Data with AWS Glue:
+
+AWS Glue extracts data from the S3 Raw Data Bucket.
+
+The data undergoes cleaning (e.g., removing null values, correcting formats) and transformation (e.g., converting to Parquet for analytics).
+
+The transformed data is stored in the S3 Processed Data Bucket.
+
+3. Data Storage
+
+Step 3.1: Load Data into Redshift:
+
+A Redshift COPY command is used to transfer structured data from the S3 Processed Data Bucket into the Amazon Redshift data warehouse.
+
+Data is stored in a format optimized for querying and analytics.
+
+4. Machine Learning Workflow
+
+Step 4.1: Model Training with SageMaker:
+
+Historical data stored in Redshift is fetched by SageMaker.
+
+The data is used to train a machine learning model (e.g., predicting stock price trends).
+
+Trained model artifacts are saved to the S3 Model Artifacts Bucket.
+
+Step 4.2: Real-Time or Batch Inference:
+
+For real-time predictions, live data is fetched from Redshift or directly from the API.
+
+SageMaker generates predictions and passes them to an AWS Lambda function for further processing or routing.
+
+Step 4.3: Store Prediction Results:
+
+Prediction results are stored in Redshift for further analysis and visualization.
+
+5. Visualization
+
+Step 5.1: Dashboard Creation with QuickSight:
+
+QuickSight connects to Redshift to query the latest data and prediction results.
+
+Interactive dashboards and charts display trends, historical analysis, and predictions.
+
+6. Notifications and Alerts
+
+Step 6.1: Trigger Notifications with SNS:
+
+AWS Lambda monitors prediction results or pipeline status.
+
+Based on predefined thresholds (e.g., stock price changes exceeding a certain percentage), Lambda triggers AWS SNS to send alerts via email, SMS, or other channels.
+
+Service Interaction at Each Stage
+
+Ingestion: API -> AWS Lambda -> S3 Raw Data Bucket
+
+Processing: S3 Raw Data Bucket -> Lambda -> AWS Glue -> S3 Processed Data Bucket
+
+Storage: S3 Processed Data Bucket -> Redshift
+
+ML Workflow:
+
+Redshift -> SageMaker (Training)
+
+SageMaker -> S3 Model Artifacts Bucket (Model Storage)
+
+SageMaker -> Lambda -> Redshift (Inference Results)
+
+Visualization: Redshift -> QuickSight
+
+Alerts: Lambda -> SNS (Notifications)
+
+ 
+
+ 
+
+Summary
+
+This system ensures a seamless flow of data from ingestion to visualization, leveraging AWS’s serverless and scalable services for a robust stock market analysis platform.
+
+ 

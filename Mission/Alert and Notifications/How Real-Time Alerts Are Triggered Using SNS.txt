@@ -1,0 +1,82 @@
+How Real-Time Alerts Are Triggered Using SNS
+
+Action: Describe how alerts are triggered programmatically.
+
+Step 1: Monitoring Stock Data
+
+Tools Used: AWS Lambda, AWS CloudWatch
+
+Action:
+
+Deploy Lambda functions to continuously monitor stock data for predefined conditions.
+
+Use CloudWatch to schedule Lambda invocations or trigger them based on incoming data streams.
+
+Step 2: Defining Alert Conditions
+
+Tools Used: AWS Lambda
+
+Action:
+
+Configure conditions such as stock price thresholds, percentage changes, or specific technical indicators.
+
+Embed condition logic within the Lambda function to evaluate incoming stock data.
+
+Step 3: Triggering SNS Topics
+
+Tools Used: AWS Lambda, AWS SNS
+
+Action:
+
+When a predefined condition is met, the Lambda function programmatically triggers an SNS topic.
+
+Include relevant details in the notification payload, such as stock symbol, current price, and alert reason.
+
+Step 4: Notification Distribution
+
+Tools Used: AWS SNS
+
+Action:
+
+SNS distributes notifications to subscribed endpoints:
+
+Email: Send alerts to configured email addresses.
+
+SMS: Deliver text notifications to phone numbers.
+
+Push Notifications: Send updates to mobile apps via platform-specific endpoints.
+
+Step 5: Subscription Management
+
+Tools Used: AWS SNS Console, AWS CLI
+
+Action:
+
+Allow users to manage their subscriptions to the SNS topic, specifying preferred notification channels.
+
+Use the AWS CLI or console to add, remove, or modify subscriptions dynamically.
+
+Step 6: Logging and Auditing
+
+Tools Used: AWS CloudWatch Logs
+
+Action:
+
+Log all alert triggers and notifications in CloudWatch Logs for auditing and troubleshooting.
+
+Monitor log metrics to ensure the reliability of the alerting system.
+
+Step 7: Testing and Validation
+
+Tools Used: AWS Lambda Test Events, AWS SNS Sandbox
+
+Action:
+
+Use test events in the Lambda console to simulate stock data and validate alerting logic.
+
+Verify SNS notifications using the sandbox environment to prevent unnecessary alerts during development.
+
+Conclusion
+
+By leveraging AWS Lambda and SNS, real-time alerts are effectively triggered and distributed to stakeholders, ensuring timely responses to significant stock market changes.
+

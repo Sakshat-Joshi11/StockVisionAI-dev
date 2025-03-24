@@ -1,0 +1,89 @@
+Data Preprocessing Steps
+
+
+Action: Outline the steps taken to preprocess data (e.g., normalization, feature engineering, handling missing values).
+
+Step 1: Data Cleaning
+
+Tool Used: AWS Glue
+
+Action:
+
+Remove null values and anomalies from the dataset to ensure data integrity.
+
+Use AWS Glue jobs to detect and clean corrupted or missing entries automatically.
+
+Step 2: Data Normalization
+
+Tool Used: Scikit-learn
+
+Purpose: Ensure all numeric features are scaled within a consistent range (e.g., 0 to 1) to improve training efficiency and model convergence.
+
+Method:
+
+Apply Min-Max scaling to normalize numerical features using Scikit-learn.
+
+Ensure consistency across training, validation, and test datasets.
+
+Step 3: Feature Engineering
+
+Tools Used: Pandas, NumPy
+
+Goal: Enhance the dataset with calculated indicators that provide meaningful insights into stock trends.
+
+Actions:
+
+Compute technical indicators, including:
+
+Relative Strength Index (RSI): Measures momentum and identifies overbought or oversold conditions.
+
+Moving Averages (SMA, EMA): Highlights trends by smoothing out price data.
+
+Bollinger Bands: Identifies price volatility.
+
+Volume-Weighted Average Price (VWAP): Combines price and volume data to analyze trends.
+
+Add lagged features to capture sequential dependencies in stock prices.
+
+Step 4: Data Splitting
+
+Tool Used: Pandas
+
+Purpose: Prepare datasets for training, validation, and testing.
+
+Method:
+
+Divide the data into a chronological split:
+
+Training Set: Historical data for model learning.
+
+Validation Set: Intermediate data for hyperparameter tuning.
+
+Test Set: Most recent data for evaluating model performance.
+
+Step 5: Handling Categorical Data (if applicable)
+
+Tools Used: Pandas, Scikit-learn
+
+Action:
+
+Encode categorical variables using one-hot encoding or label encoding to convert them into numeric formats.
+
+For ordinal data, use ordinal encoding to retain inherent order.
+
+Step 6: Data Storage
+
+Tool Used: AWS S3
+
+Action:
+
+Store preprocessed datasets in organized S3 buckets for easy access during model training.
+
+Use S3 versioning to maintain dataset integrity and track changes.
+
+Conclusion
+
+By following these preprocessing steps, the dataset is prepared for optimal performance in training the LSTM model. The process ensures that the data is clean, normalized, enriched with relevant features, and properly partitioned for training and evaluation.
+
+ 
+

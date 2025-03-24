@@ -1,0 +1,71 @@
+Types of Visualizations to Be Used in QuickSight
+
+
+Action: Define the types of visualizations to be used in QuickSight.
+
+Visualization 1: Line Charts
+
+Purpose:
+
+Display stock price movements over time.
+
+Features:
+
+Time-series data visualization with zooming and filtering options.
+
+Overlay multiple stocks for comparison.
+
+Visualization 2: Bar Charts
+
+Purpose:
+
+Compare stock performance across sectors or time intervals.
+
+Features:
+
+Aggregated metrics by sector (e.g., average price, volume).
+
+Customizable intervals for performance comparison (daily, weekly, monthly).
+
+Visualization 3: Heatmaps
+
+Purpose:
+
+Show correlation between different stock metrics.
+
+Features:
+
+Use color gradients to represent strength and direction of correlations.
+
+Interactivity for selecting specific metrics to analyze.
+
+Visualization 4: Scatter Plots
+
+Purpose:
+
+Highlight relationships between features (e.g., volume vs. price changes).
+
+Features:
+
+Support for regression lines or clustering to identify patterns.
+
+Tooltip overlays for detailed data points.
+
+Additional Features:
+
+Tools Used: Amazon QuickSight, AWS S3 (for data storage), AWS Glue (for preprocessing data).
+
+Customization:
+
+Provide filters for users to drill down into specific stocks, sectors, or time periods.
+
+Enable exporting visualizations as images or reports.
+
+ 
+
+Conclusion:
+
+QuickSight provides versatile visualizations that help users uncover insights into stock data, trends, and correlations effectively.
+
+ 
+

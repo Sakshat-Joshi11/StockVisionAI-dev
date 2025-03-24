@@ -1,0 +1,58 @@
+How Users Will Interact with the Dashboards
+
+Action: Outline how users will interact with the dashboards.
+
+Feature 1: Filtering by Date Range
+
+Tools Used: Web Application, React Date Picker (or similar library)
+
+Action:
+
+Provide a calendar picker interface for users to select start and end dates.
+
+Update the displayed data dynamically based on the selected date range.
+
+Feature 2: Stock Selection
+
+Tools Used: Web Application, Dropdown Component, AWS API Gateway
+
+Action:
+
+Allow users to search or select specific stocks from a dropdown or search bar.
+
+Fetch data for the selected stock in real-time through API Gateway endpoints.
+
+Feature 3: Prediction Overlays
+
+Tools Used: Recharts (or similar graphing library), AWS SageMaker Endpoints
+
+Action:
+
+Provide a toggle button to display predicted trends overlaid on historical stock data.
+
+Enable comparison between actual and predicted stock prices interactively.
+
+Feature 4: Real-Time Updates
+
+Tools Used: WebSocket API, AWS Lambda
+
+Action:
+
+Stream live stock data to the dashboard with minimal latency.
+
+Include an option to pause or resume live updates for user convenience.
+
+Feature 5: Export Options
+
+Tools Used: FileSaver.js, AWS S3
+
+Action:
+
+Provide options to download displayed data as CSV or PDF files.
+
+Enable users to save customized reports based on their filter settings.
+
+Conclusion
+
+The dashboard offers intuitive controls, allowing users to personalize their experience. By incorporating features like filtering, stock selection, and prediction overlays, users gain actionable insights with ease.
+

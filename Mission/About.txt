@@ -1,0 +1,60 @@
+March 17, 2025
+Overview
+
+The purpose of this project is to develop a production-grade system that leverages machine learning (ML) and artificial intelligence (AI) to process big data for accurate stock price predictions. By utilizing advanced ML techniques, the system aims to counter the inaccuracies and inefficiencies present in existing market applications, providing a reliable solution for traders and investors.
+
+Problem Statement:
+Investors and financial institutions require precise and timely insights into stock market trends to make informed decisions. However, many existing solutions struggle with processing large datasets efficiently and often produce inaccurate predictions due to outdated algorithms or limited computational capabilities. This project aims to bridge this gap by creating a scalable and intelligent platform that processes big data using ML and AI to deliver highly accurate predictions, giving users a competitive edge in the market.
+
+Goals
+
+Leverage ML and AI for Prediction Accuracy:
+-Develop and deploy advanced machine learning models to provide more accurate stock price predictions compared to current market solutions.
+
+Real-Time Big Data Processing:
+-Create a robust data pipeline capable of ingesting, transforming, and analyzing large-scale real-time stock market data.
+
+Scalable Data Management:
+-Implement scalable storage and processing systems using AWS services like S3, Redshift, and Glue.
+
+Real-Time Insights and Notifications:
+-Enable stakeholders to receive real-time alerts on critical stock trends using AWS SNS.
+
+Interactive Data Visualization:
+-Build user-friendly dashboards with AWS QuickSight to present trends and predictions in a visually compelling way.
+
+Environment Management:
+-Utilize AWS QuickSight to create dashboards for visualizing stock market trends and model predictions.
+
+Cost-Effective and Scalable Infrastructure:
+-Establish a dev environment with Terraform for a seamless and controlled deployment process.
+
+Cost-Effective Infrastructure:
+-Ensure the entire system remains scalable and cost-efficient while staying within AWS free-tier limits where possible
+
+Comprehensive Documentation:
+-Document all stages of the project in Notion and Lucidchart, ensuring clarity for stakeholders and potential collaborators.
+
+Specifications
+-Programming Language: Python (for data processing, ML, and APIs).
+
+AWS Services:
+-S3 (Data storage)
+-Redshift (Data warehousing)
+-Lambda (Serverless computing)
+-SageMaker (ML model training and deployment)
+-Glue (Data transformation)
+-SNS (Notifications)
+-QuickSight (Visualization)
+-Infrastructure Management: Terraform.
+
+Collaboration Tools: 
+-Jira (task tracking) 
+-Notion (documentation)
+-Lucidchart (diagrams).
+
+Version Control: 
+-Git and GitHub.
+
+
+ 
