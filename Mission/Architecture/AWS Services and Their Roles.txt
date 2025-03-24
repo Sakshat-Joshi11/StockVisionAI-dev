@@ -1,0 +1,73 @@
+AWS Services and Their Roles 
+
+AWS S3:
+
+Purpose: Data storage.
+
+Roles:
+
+Raw Data Bucket: Stores unprocessed data fetched from APIs.
+
+Processed Data Bucket: Stores transformed data ready for analytics.
+
+Model Artifacts Bucket: Stores trained machine learning models.
+
+AWS Lambda:
+
+Purpose: Event-driven serverless computing.
+
+Roles:
+
+Triggers data ingestion from APIs.
+
+Validates and processes data.
+
+Manages notifications and alerts.
+
+AWS Glue:
+
+Purpose: Data transformation.
+
+Roles:
+
+Cleanses and preprocesses raw data.
+
+Converts data into a structured format like Parquet.
+
+Amazon Redshift:
+
+Purpose: Data warehousing.
+
+Roles:
+
+Stores analytics-ready data.
+
+Provides data for SageMaker training and QuickSight visualization.
+
+AWS SageMaker:
+
+Purpose: Machine learning.
+
+Roles:
+
+Trains machine learning models.
+
+Hosts models for real-time and batch predictions.
+
+Stores model artifacts in S3.
+
+AWS QuickSight:
+
+Purpose: Data visualization.
+
+Roles:
+
+Connects to Redshift for creating dashboards and charts.
+
+AWS SNS:
+
+Purpose: Notifications and alerts.
+
+Roles:
+
+Sends alerts for significant events or pipeline issues.

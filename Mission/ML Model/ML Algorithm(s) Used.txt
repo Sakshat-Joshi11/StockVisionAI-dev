@@ -1,0 +1,88 @@
+ML Algorithm(s) Used
+
+Algorithm Chosen: Long Short-Term Memory (LSTM)
+
+Reason for Selection: Long Short-Term Memory (LSTM) networks are chosen for predicting stock price trends due to their exceptional capabilities in time-series forecasting. Stocks are sequential data, where the current price is influenced by historical trends, patterns, and other contextual factors. LSTM networks are specifically designed to handle such dependencies effectively.
+
+Key Advantages of LSTM:
+
+Sequential Dependency Management:
+
+LSTMs can learn and remember patterns over long time horizons, which is crucial for stock market prediction.
+
+Avoidance of Vanishing Gradient Problem:
+
+Unlike traditional Recurrent Neural Networks (RNNs), LSTMs overcome the vanishing gradient issue, ensuring efficient training for long sequences.
+
+Dynamic Feature Handling:
+
+The model can integrate multiple features such as historical prices, technical indicators, and macroeconomic data, enabling it to capture trends and seasonality.
+
+Scalability:
+
+LSTMs can be easily scaled to handle large datasets and multiple time-series, aligning with real-world scenarios of financial data analysis.
+
+ 
+
+ 
+
+Features to Be Used: The LSTM model focuses on the following features to predict stock price trends:
+
+Historical Price Data:
+
+Open, High, Low, Close, and Volume (OHLCV) values.
+
+Technical Indicators:
+
+Moving Averages (SMA, EMA), Bollinger Bands, Relative Strength Index (RSI), and other momentum indicators.
+
+External Factors:
+
+Market sentiment, sector performance, macroeconomic indicators (e.g., interest rates, GDP).
+
+ 
+
+ 
+
+Implementation Steps:
+
+Data Collection:
+
+Gather historical stock price data and relevant indicators from reliable sources such as Yahoo Finance or Alpha Vantage.
+
+Preprocessing:
+
+Clean and normalize the data to ensure consistency.
+
+Engineer features such as moving averages and sentiment scores.
+
+Model Development:
+
+Build the LSTM model using frameworks like TensorFlow or PyTorch.
+
+Define the architecture with suitable input layers, hidden units, and output layers.
+
+Training:
+
+Split the data into training and validation sets.
+
+Train the LSTM model using Mean Squared Error (MSE) as the loss function and optimize using Adam optimizer.
+
+Evaluation:
+
+Validate the model on unseen data and evaluate using metrics like Root Mean Squared Error (RMSE) and Mean Absolute Percentage Error (MAPE).
+
+Deployment:
+
+Host the trained model using AWS SageMaker or a similar service.
+
+Provide real-time predictions via an API for stock price trend analysis.
+
+ 
+
+ 
+
+Conclusion: By leveraging LSTM networks, the project aims to provide accurate stock price trend predictions by effectively capturing and learning from historical patterns and features. The choice of LSTM ensures that the model is capable of addressing the sequential and dynamic nature of stock market data, making it a robust solution for the task.
+
+ 
+

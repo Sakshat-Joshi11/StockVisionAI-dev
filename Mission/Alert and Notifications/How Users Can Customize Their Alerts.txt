@@ -1,0 +1,93 @@
+How Users Can Customize Their Alerts
+
+1 person viewed
+Action: Detail how users can customize their alerts.
+
+Step 1: Accessing the Alert Customization Interface
+
+Tools Used: Web Application, AWS Amplify (for front-end hosting), AWS Cognito (for authentication)
+
+Action:
+
+Users log in to the web interface using secure authentication via AWS Cognito.
+
+Navigate to the "Alert Settings" section.
+
+Step 2: Selecting Stock Symbols
+
+Tools Used: Web Application, DynamoDB
+
+Action:
+
+Provide a search box or dropdown menu to select stock symbols of interest.
+
+Save selected stock symbols in a user-specific DynamoDB table.
+
+Step 3: Setting Notification Thresholds
+
+Tools Used: Web Application, AWS Lambda
+
+Action:
+
+Allow users to specify thresholds for:
+
+Price Change: Define percentage or absolute changes (e.g., "+5%", "-10%", "$100").
+
+Volume Change: Set conditions for significant volume shifts (e.g., "+50%").
+
+Technical Indicators: Configure alerts for specific signals like RSI or moving average crossovers.
+
+Save thresholds and conditions via Lambda functions that update the user's configuration in DynamoDB.
+
+Step 4: Choosing Delivery Methods
+
+Tools Used: AWS SNS, Web Application
+
+Action:
+
+Provide options for notification delivery channels:
+
+Email: Enter and verify an email address.
+
+SMS: Add and confirm a phone number.
+
+Push Notifications: Integrate with mobile app endpoints.
+
+Allow users to select one or multiple methods and save their preferences.
+
+Step 5: Reviewing and Testing Alert Settings
+
+Tools Used: AWS Lambda, AWS SNS Sandbox
+
+Action:
+
+Display a summary of configured alerts for review.
+
+Include a "Test Alert" button to verify the functionality of selected delivery channels.
+
+Step 6: Updating Preferences
+
+Tools Used: Web Application, AWS API Gateway
+
+Action:
+
+Enable real-time updates to alert settings via the web interface.
+
+Use API Gateway endpoints to process updates dynamically without requiring a page reload.
+
+Step 7: Storing and Securing User Preferences
+
+Tools Used: DynamoDB, AWS KMS (Key Management Service)
+
+Action:
+
+Store user preferences securely in DynamoDB with encryption enabled using AWS KMS.
+
+Ensure access controls are in place to protect sensitive data like phone numbers and email addresses.
+
+Conclusion
+
+By providing a user-friendly interface and robust backend, users can easily customize their alerts to stay informed about market changes that matter most to them.
+
+ 
+

@@ -1,0 +1,67 @@
+Compare Model Accuracy Against Other Apps
+
+
+Action: Detail how the model counters inaccuracies seen in other prediction apps.
+
+Step 1: Addressing Limitations of Other Apps
+
+Observation: Many existing stock prediction apps rely solely on historical data, leading to oversimplified predictions and ignoring real-time market dynamics.
+
+Our Approach:
+
+Tools Used: Pandas, NumPy
+
+Integrate advanced technical indicators such as Relative Strength Index (RSI), Bollinger Bands, and Moving Averages to capture comprehensive trends.
+
+Incorporate real-time market trend analysis using live data streams.
+
+Step 2: Enhancing Prediction Reliability
+
+Tool Used: SageMaker Training Jobs
+
+Action:
+
+Regularly retrain the model using updated datasets to minimize prediction drift and ensure responsiveness to market changes.
+
+Employ iterative training processes with validation monitoring for optimized performance.
+
+Step 3: Evaluating Practical Accuracy
+
+Metrics Used: Directional Accuracy, Mean Squared Error (MSE), R-squared (R²)
+
+Tools Used: SageMaker, Scikit-learn
+
+Action:
+
+Measure directional accuracy to evaluate the model’s ability to correctly predict the direction of price movements.
+
+Compare metrics with industry benchmarks to validate improvement.
+
+Step 4: Comparative Analysis
+
+Tools Used: Python Visualization Libraries (Matplotlib, Seaborn)
+
+Action:
+
+Conduct a comparative analysis of predictions against other apps to highlight key advantages.
+
+Visualize performance differences using plots for better interpretability.
+
+Step 5: Real-time Adaptability
+
+Tools Used: AWS Lambda, SageMaker Endpoint Hosting
+
+ 
+
+Action:
+
+Implement adaptive learning mechanisms to incorporate real-time data into predictions.
+
+Integrate endpoint predictions with external APIs to dynamically adjust to market trends.
+
+Conclusion
+
+By addressing the limitations of existing apps, incorporating robust data preprocessing, and leveraging advanced evaluation metrics, our model achieves superior prediction accuracy and practical relevance for real-world stock trend forecasting.
+
+ 
+

@@ -1,0 +1,97 @@
+AWS Account Setup, IAM Roles, and Permissions
+
+Action: Configure AWS accounts and define IAM roles for environment-specific access control.
+
+Step 1: AWS Account Creation
+
+Tools Used: AWS Organizations
+
+Action:
+
+Create separate AWS accounts for development (dev), testing (test), and production (prod) using AWS Organizations.
+
+Organize accounts into Organizational Units (OUs) for easier management and policy enforcement.
+
+Step 2: IAM Role Configuration
+
+Tools Used: AWS IAM
+
+Action:
+
+Define IAM roles for each environment with tailored access permissions:
+
+Dev Environment:
+
+Grant access to essential AWS services, such as S3, EC2, and Lambda, for testing and debugging.
+
+Enable developers to create and modify resources within the dev account.
+
+Test Environment:
+
+Provide permissions to replicate production settings, including resource provisioning and monitoring.
+
+Restrict destructive actions to protect test data integrity.
+
+Prod Environment:
+
+Restrict permissions to deployment and monitoring tasks only.
+
+Limit access to sensitive data and critical resources to authorized personnel.
+
+Step 3: Policy Enforcement
+
+Tools Used: AWS Service Control Policies (SCPs)
+
+Action:
+
+Implement SCPs within AWS Organizations to enforce resource limits and service access:
+
+Restrict usage of high-cost services in dev and test accounts.
+
+Enforce tagging policies to track resource allocation and ownership.
+
+Apply SCPs to Organizational Units (OUs) for consistent policy enforcement across accounts.
+
+Step 4: MFA and Security Enhancements
+
+Tools Used: AWS IAM, AWS Security Hub
+
+Action:
+
+Enable Multi-Factor Authentication (MFA) for all user accounts to enhance security.
+
+Use AWS Security Hub to monitor compliance with security best practices.
+
+Step 5: Cross-Account Access Management
+
+Tools Used: AWS IAM Roles, AWS STS
+
+Action:
+
+Configure cross-account IAM roles to allow secure resource access between dev, test, and prod accounts.
+
+Use AWS Security Token Service (STS) to manage temporary credentials for cross-account activities.
+
+Step 6: Monitoring and Auditing
+
+Tools Used: AWS CloudTrail, AWS Config
+
+Action:
+
+Enable CloudTrail to log all account activities and ensure accountability.
+
+Use AWS Config to track configuration changes and ensure compliance with policies.
+
+Step 7: Documentation and Training
+
+Tools Used: Confluence, Notion
+
+Action:
+
+Document account setup processes, IAM roles, and permissions in Confluence or Notion for team reference.
+
+Provide training sessions to ensure developers and administrators understand access policies and security measures.
+
+Conclusion
+
+By separating AWS accounts and defining environment-specific IAM roles and policies, this setup ensures secure, scalable, and efficient resource management across development, testing, and production environments.
