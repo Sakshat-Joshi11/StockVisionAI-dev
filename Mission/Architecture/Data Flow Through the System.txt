@@ -32,9 +32,15 @@ The transformed data is stored in the S3 Processed Data Bucket.
 
 3. Data Storage
 
-Step 3.1: Load Data into Redshift:
+Step 3.1: Load Data into S3 Processed Data Bucket.
 
-A Redshift COPY command is used to transfer structured data from the S3 Processed Data Bucket into the Amazon Redshift data warehouse.
+After the AWS Glue ETL job finishes cleaning and transforming the raw data, it saves the transformed data back into the S3 Processed Data Bucket in a format optimized for analytics (e.g., Parquet or CSV).
+
+The Glue Data Catalog acts as a metadata layer, mapping the data stored in S3 into tables and columns.
+
+Athena uses the schema in the Glue Data Catalog to interpret the data stored in S3.
+
+When you run an SQL query in Athena, it retrieves and processes the relevant data directly from the S3 Processed Data Bucket.
 
 Data is stored in a format optimized for querying and analytics.
 
@@ -42,7 +48,7 @@ Data is stored in a format optimized for querying and analytics.
 
 Step 4.1: Model Training with SageMaker:
 
-Historical data stored in Redshift is fetched by SageMaker.
+Historical data stored in S3 Processed Data Bucket is fetched by SageMaker.
 
 The data is used to train a machine learning model (e.g., predicting stock price trends).
 
@@ -50,13 +56,13 @@ Trained model artifacts are saved to the S3 Model Artifacts Bucket.
 
 Step 4.2: Real-Time or Batch Inference:
 
-For real-time predictions, live data is fetched from Redshift or directly from the API.
+For real-time predictions, live data is fetched from S3 Processed Data Bucket or directly from the API.
 
 SageMaker generates predictions and passes them to an AWS Lambda function for further processing or routing.
 
 Step 4.3: Store Prediction Results:
 
-Prediction results are stored in Redshift for further analysis and visualization.
+Prediction results are stored in S3 Results Data Bucket for further analysis and visualization.
 
 5. Visualization
 
@@ -80,26 +86,33 @@ Ingestion: API -> AWS Lambda -> S3 Raw Data Bucket
 
 Processing: S3 Raw Data Bucket -> Lambda -> AWS Glue -> S3 Processed Data Bucket
 
-Storage: S3 Processed Data Bucket -> Redshift
+Lambda may optionally trigger Glue jobs or you can schedule Glue directly using a Glue workflow.
+
+Storage: S3 Processed Data Bucket -> S3 Processed Data Bucket → Athena (For quering)
 
 ML Workflow:
 
-Redshift -> SageMaker (Training)
+S3 Processed Data Bucket -> SageMaker (Training)
 
 SageMaker -> S3 Model Artifacts Bucket (Model Storage)
 
-SageMaker -> Lambda -> Redshift (Inference Results)
+SageMaker -> Lambda -> S3 Result  Data Bucket (Inference Results)-> Athena (For quering)
 
-Visualization: Redshift -> QuickSight
+If SageMaker does batch inference, the results (predictions) are stored directly into S3 Result Data Bucket.
+
+If SageMaker performs real-time inference, a Lambda function can invoke the endpoint, write results to S3 Result Data Bucket, and optionally trigger alerts via SNS.
+
+Athena can query these inference results in S3 Result Data Bucket.
+
+Visualization: S3 Result  Data Bucket  -> QuickSight
 
 Alerts: Lambda -> SNS (Notifications)
 
- 
 
- 
+
+
 
 Summary
 
 This system ensures a seamless flow of data from ingestion to visualization, leveraging AWS’s serverless and scalable services for a robust stock market analysis platform.
 
- 
