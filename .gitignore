@@ -3,3 +3,4 @@ venv/
 *.tfstate
 *.tfstate.backup
 *.log
+config/

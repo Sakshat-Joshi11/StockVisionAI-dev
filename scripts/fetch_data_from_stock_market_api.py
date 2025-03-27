@@ -1,12 +1,21 @@
 import yfinance as yf
 import pandas as pd
 import boto3
+import json
+import os
 from botocore.exceptions import NoCredentialsError
 
-# AWS S3 Configuration
-AWS_ACCESS_KEY = "AKIAYWBJYDYNSPUPOKXN"
-AWS_SECRET_KEY = "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"
-S3_BUCKET_NAME = "stock-market-raw-data-dev"
+
+def load_config(config_path="/Users/dev/Desktop/Programming/Devlopment/StockVisionAI/config/configs.json"):
+    """
+    Load configuration from a JSON file.
+
+    :param config_path: Path to the configuration file
+    :return: Dictionary containing configuration values
+    """
+    with open(config_path, "r") as config_file:
+        config = json.load(config_file)
+    return config
 
 def fetch_stock_data(ticker, start_date, end_date):
     """
@@ -25,21 +34,25 @@ def fetch_stock_data(ticker, start_date, end_date):
     print(f"Data fetched successfully for {ticker}.")
     return data
 
-def save_to_csv(data, filename):
+def save_to_csv(data, filename, raw_data_dir):
     """
-    Save DataFrame to a CSV file.
+    Save DataFrame to a CSV file in the specified directory.
 
     :param data: Pandas DataFrame to save
     :param filename: Name of the CSV file
+    :param raw_data_dir: Directory to save the file in
     """
-    data.to_csv(filename)
-    print(f"Data saved locally as {filename}.")
+    
+    file_path = os.path.join(raw_data_dir, filename) 
+    data.to_csv(file_path)
+    print(f"Data saved locally as {file_path}.")
+    return file_path
 
-def upload_to_s3(filename, bucket_name, aws_access_key, aws_secret_key):
+def upload_to_s3(file_path, bucket_name, aws_access_key, aws_secret_key):
     """
     Upload a file to an S3 bucket.
 
-    :param filename: File to upload
+    :param file_path: Path to the file to upload
     :param bucket_name: Target S3 bucket name
     :param aws_access_key: AWS access key
     :param aws_secret_key: AWS secret key
@@ -50,28 +63,37 @@ def upload_to_s3(filename, bucket_name, aws_access_key, aws_secret_key):
         aws_secret_access_key=aws_secret_key,
     )
     try:
-        s3.upload_file(filename, bucket_name, filename)
-        print(f"File {filename} uploaded to S3 bucket {bucket_name} successfully.")
+        # Upload file to S3 using the filename as the key
+        s3.upload_file(file_path, bucket_name, os.path.basename(file_path))
+        print(f"File {os.path.basename(file_path)} uploaded to S3 bucket {bucket_name} successfully.")
     except FileNotFoundError:
-        print(f"File {filename} not found.")
+        print(f"File {file_path} not found.")
     except NoCredentialsError:
         print("AWS credentials not available.")
 
 def main():
-    # Define parameters
-    ticker = "AAPL" 
-    start_date = "2020-01-01"
-    end_date = "2023-12-31"
+    config=load_config()
+
+    # Extract values from config
+    aws_access_key = config["aws"]["access_key"]
+    aws_secret_key = config["aws"]["secret_key"]
+    s3_bucket_name = config["aws"]["s3_bucket_name"]
+
+    ticker = config["stock_data"]["ticker"]
+    start_date = config["stock_data"]["start_date"]
+    end_date = config["stock_data"]["end_date"]
+
+    raw_data_dir = config["paths"]["raw_data_dir"]
     local_filename = f"{ticker}_historical_data.csv"
 
     # Fetch stock data
     data = fetch_stock_data(ticker, start_date, end_date)
     if data is not None:
         # Save data locally
-        save_to_csv(data, local_filename)
+        file_path = save_to_csv(data, local_filename, raw_data_dir)
 
-        # Upload data to S3 
-        upload_to_s3(local_filename, S3_BUCKET_NAME, AWS_ACCESS_KEY, AWS_SECRET_KEY)
+        # Upload data to S3
+        upload_to_s3(file_path, s3_bucket_name, aws_access_key, aws_secret_key)
 
 if __name__ == "__main__":
     main()
