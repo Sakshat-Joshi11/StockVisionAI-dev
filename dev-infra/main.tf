@@ -22,6 +22,10 @@ resource "aws_s3_bucket" "processed_data" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket" "curated_data"{
+  bucket        = "stock-market-curated-data${var.bucket_suffix}"
+  force_destroy = true
+}
 # Lambda Functions
 resource "aws_lambda_function" "process_stock_data" {
   function_name = "process-stock-data${var.bucket_suffix}"
