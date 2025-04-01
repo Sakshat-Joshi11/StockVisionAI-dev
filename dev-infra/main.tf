@@ -22,35 +22,75 @@ resource "aws_s3_bucket" "processed_data" {
   force_destroy = true
 }
 
-resource "aws_s3_bucket" "curated_data"{
+resource "aws_s3_bucket" "curated_data" {
   bucket        = "stock-market-curated-data${var.bucket_suffix}"
   force_destroy = true
 }
-# Lambda Functions
-resource "aws_lambda_function" "process_stock_data" {
-  function_name = "process-stock-data${var.bucket_suffix}"
+
+# Lambda Function for Fetching the data from API
+resource "aws_lambda_function" "fetch_stock_market_data" {
+  function_name = "fetch_stock_market_data${var.bucket_suffix}"
   runtime       = "python3.9"
-  handler       = "lambda_function.lambda_handler"
+  handler       = "lambda_to_fetch_stock_market_data.lambda_handler"
   role          = aws_iam_role.lambda_execution_role.arn
 
-  source_code_hash = filebase64sha256("${path.module}/lambda/process_stock_data.zip")
-  filename         = "${path.module}/lambda/process_stock_data.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda/fetch_stock_market_data.zip")
+  filename      = "${path.module}/lambda/fetch_stock_market_data.zip"
+
+  timeout = 120
+  memory_size = 512
+
+  layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
 
   environment {
     variables = {
-      BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
+      CONFIG_BUCKET_NAME = "terraform-stockvisionai-infra"
+      CONFIG_FILE_PATH   = "configs.json"
+      RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
     }
   }
 }
 
-resource "aws_lambda_function" "notify_stock_alert" {
-  function_name = "notify-stock-alert${var.bucket_suffix}"
+# Lambda Function for Partitioning Consolidated Data
+resource "aws_lambda_function" "partition_consolidated_data" {
+  function_name = "partition-consolidated-data${var.bucket_suffix}"
   runtime       = "python3.9"
-  handler       = "lambda_function.lambda_handler"
+  handler       = "lambda_to_partition_consolidated_csv.lambda_handler"
   role          = aws_iam_role.lambda_execution_role.arn
 
-  source_code_hash = filebase64sha256("${path.module}/lambda/notify_stock_alert.zip")
-  filename         = "${path.module}/lambda/notify_stock_alert.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda/partition_consolidated_data.zip")
+  filename      = "${path.module}/lambda/partition_consolidated_data.zip"
+
+  timeout = 120
+  memory_size = 512
+
+  layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
+
+  environment {
+    variables = {
+      RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
+    }
+  }
+}
+
+# S3 Trigger for Partition Lambda
+resource "aws_s3_bucket_notification" "consolidated_data_notification" {
+  bucket = aws_s3_bucket.raw_data.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.partition_consolidated_data.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "consolidated_raw/"
+    filter_suffix       = ".csv"
+  }
+}
+
+resource "aws_lambda_permission" "allow_partition_trigger" {
+  statement_id  = "AllowS3Invocation"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.partition_consolidated_data.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.raw_data.arn
 }
 
 # IAM Roles and Policies
@@ -119,22 +159,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logging_policy_attach" {
 # SNS Topic
 resource "aws_sns_topic" "stock_alerts" {
   name = "stock-alerts${var.bucket_suffix}"
-}
-
-# CloudWatch Metric Alarm
-resource "aws_cloudwatch_metric_alarm" "high_error_rate_process_stock_data_dev" {
-  alarm_name          = "HighErrorRate-ProcessStockData-Dev"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Errors"
-  namespace           = "AWS/Lambda"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_actions       = [aws_sns_topic.stock_alerts.arn]
-  dimensions = {
-    FunctionName = aws_lambda_function.process_stock_data.function_name
-  }
 }
 
 # CloudWatch Log Group
