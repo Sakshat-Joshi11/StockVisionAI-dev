@@ -38,7 +38,7 @@ resource "aws_lambda_function" "fetch_stock_market_data" {
   filename      = "${path.module}/lambda/fetch_stock_market_data.zip"
 
   timeout = 120
-  memory_size = 512
+  memory_size = 1024
 
   layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
 
