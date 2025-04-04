@@ -73,9 +73,33 @@ resource "aws_lambda_function" "partition_consolidated_data" {
   }
 }
 
-# S3 Trigger for Partition Lambda
-resource "aws_s3_bucket_notification" "consolidated_data_notification" {
-  bucket = aws_s3_bucket.raw_data.id
+# Lambda Function for adding Major News to partitioned data
+resource "aws_lambda_function" "add_major_news_to_partitioned_data" {
+  function_name = "add-major-news-to-p-data${var.bucket_suffix}"
+  runtime       = "python3.9"
+  handler       = "lambda_to_add_major_news_to_p_data.lambda_handler"
+  role          = aws_iam_role.lambda_execution_role.arn
+
+  source_code_hash = filebase64sha256("${path.module}/lambda/add_major_news_to_p_data.zip")
+  filename         = "${path.module}/lambda/add_major_news_to_p_data.zip"
+
+  timeout     = 120
+  memory_size = 1024
+
+  layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
+
+  environment {
+    variables = {
+      RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
+      NEWS_API_KEY            = var.news_api_key
+      NEWS_API_URL            = var.news_api_url
+    }
+  }
+}
+
+# S3 Trigger for Partition Lambda and S3 Trigger for Adding News Lambda 
+resource "aws_s3_bucket_notification" "add_major_news_to_partitioned_notification" {
+  bucket = aws_s3_bucket.raw_data.id 
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.partition_consolidated_data.arn
@@ -83,6 +107,22 @@ resource "aws_s3_bucket_notification" "consolidated_data_notification" {
     filter_prefix       = "consolidated_raw/"
     filter_suffix       = ".csv"
   }
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.add_major_news_to_partitioned_data.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "partitioned_raw/"
+    filter_suffix       = ".csv"
+  }
+}
+
+# Grant S3 permission to invoke the Lambda function
+resource "aws_lambda_permission" "s3_invoke_add_major_news" {
+  statement_id  = "AllowS3InvokeAddMajorNews"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.add_major_news_to_partitioned_data.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.raw_data.arn
 }
 
 resource "aws_lambda_permission" "allow_partition_trigger" {
