@@ -35,9 +35,9 @@ resource "aws_lambda_function" "fetch_stock_market_data" {
   role          = aws_iam_role.lambda_execution_role.arn
 
   source_code_hash = filebase64sha256("${path.module}/lambda/fetch_stock_market_data.zip")
-  filename      = "${path.module}/lambda/fetch_stock_market_data.zip"
+  filename         = "${path.module}/lambda/fetch_stock_market_data.zip"
 
-  timeout = 120
+  timeout     = 120
   memory_size = 1024
 
   layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
@@ -46,7 +46,7 @@ resource "aws_lambda_function" "fetch_stock_market_data" {
     variables = {
       CONFIG_BUCKET_NAME = "terraform-stockvisionai-infra"
       CONFIG_FILE_PATH   = "configs.json"
-      RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
+      RAW_BUCKET_NAME    = "stock-market-raw-data${var.bucket_suffix}"
     }
   }
 }
@@ -59,9 +59,9 @@ resource "aws_lambda_function" "partition_consolidated_data" {
   role          = aws_iam_role.lambda_execution_role.arn
 
   source_code_hash = filebase64sha256("${path.module}/lambda/partition_consolidated_data.zip")
-  filename      = "${path.module}/lambda/partition_consolidated_data.zip"
+  filename         = "${path.module}/lambda/partition_consolidated_data.zip"
 
-  timeout = 120
+  timeout     = 120
   memory_size = 512
 
   layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
@@ -73,33 +73,67 @@ resource "aws_lambda_function" "partition_consolidated_data" {
   }
 }
 
-# Lambda Function for adding Major News to partitioned data
-resource "aws_lambda_function" "add_major_news_to_partitioned_data" {
-  function_name = "add-major-news-to-p-data${var.bucket_suffix}"
+# Lambda Function: SQS News Consumer
+resource "aws_lambda_function" "sqs_news_consumer" {
+  function_name = "sqs-news-consumer${var.bucket_suffix}"
   runtime       = "python3.9"
-  handler       = "lambda_to_add_major_news_to_p_data.lambda_handler"
+  handler       = "lambda_for_sqs_news_consumer.lambda_handler"
   role          = aws_iam_role.lambda_execution_role.arn
 
-  source_code_hash = filebase64sha256("${path.module}/lambda/add_major_news_to_p_data.zip")
-  filename         = "${path.module}/lambda/add_major_news_to_p_data.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda/sqs_news_consumer.zip")
+  filename         = "${path.module}/lambda/sqs_news_consumer.zip"
 
-  timeout     = 120
-  memory_size = 1024
+  timeout     = 60
+  memory_size = 512
 
   layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
 
   environment {
     variables = {
       RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
-      NEWS_API_KEY            = var.news_api_key
-      NEWS_API_URL            = var.news_api_url
+      APCA_API_KEY_ID = "PKJZB25117QC6OYXPH75"
+      APCA_API_SECRET_KEY = "bhZfXzjBAAfVuqHOpjEw5UDzBlf4tAMaRAvDwjNR"
+      NEWS_API_URL = "https://data.alpaca.markets/v1beta1/news" 
     }
   }
 }
 
-# S3 Trigger for Partition Lambda and S3 Trigger for Adding News Lambda 
-resource "aws_s3_bucket_notification" "add_major_news_to_partitioned_notification" {
-  bucket = aws_s3_bucket.raw_data.id 
+# Lambda Function: SQS to SNS Producer
+resource "aws_lambda_function" "sqs_news_producer" {
+  function_name = "sqs-to-sns-producer${var.bucket_suffix}"
+  runtime       = "python3.9"
+  handler       = "lambda_for_sqs_news_producer.lambda_handler"
+  role          = aws_iam_role.lambda_execution_role.arn
+
+  source_code_hash = filebase64sha256("${path.module}/lambda/sqs_news_producer.zip")
+  filename         = "${path.module}/lambda/sqs_news_producer.zip"
+
+  timeout     = 300
+  memory_size = 2048
+
+  layers = ["arn:aws:lambda:ap-south-1:336392948345:layer:AWSSDKPandas-Python39:28"]
+
+  environment {
+    variables = {
+      RAW_BUCKET_NAME = "stock-market-raw-data${var.bucket_suffix}"
+      TOPIC_ARN = aws_sns_topic.stock_alerts.arn
+      SQS_QUEUE_URL = "https://sqs.ap-south-1.amazonaws.com/597088017947/stock-news-queue"
+      APCA_API_KEY_ID = "PKJZB25117QC6OYXPH75"
+      APCA_API_SECRET_KEY = "bhZfXzjBAAfVuqHOpjEw5UDzBlf4tAMaRAvDwjNR"
+      NEWS_API_URL = "https://data.alpaca.markets/v1beta1/news"
+    }
+  }
+}
+
+resource "aws_lambda_event_source_mapping" "trigger_consumer_from_sqs" {
+  event_source_arn = aws_sqs_queue.stock_news_queue.arn
+  function_name    = aws_lambda_function.sqs_news_consumer.arn
+  batch_size       = 10
+  enabled          = true
+}
+
+resource "aws_s3_bucket_notification" "s3_triggers" {
+  bucket = aws_s3_bucket.raw_data.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.partition_consolidated_data.arn
@@ -109,31 +143,61 @@ resource "aws_s3_bucket_notification" "add_major_news_to_partitioned_notificatio
   }
 
   lambda_function {
-    lambda_function_arn = aws_lambda_function.add_major_news_to_partitioned_data.arn
+    lambda_function_arn = aws_lambda_function.sqs_news_producer.arn
     events              = ["s3:ObjectCreated:*"]
     filter_prefix       = "partitioned_raw/"
-    filter_suffix       = ".csv"
   }
+
+  depends_on = [
+    aws_lambda_permission.allow_partition_trigger,
+    aws_lambda_permission.allow_sqs_news_producer
+  ]
 }
 
-# Grant S3 permission to invoke the Lambda function
-resource "aws_lambda_permission" "s3_invoke_add_major_news" {
-  statement_id  = "AllowS3InvokeAddMajorNews"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.add_major_news_to_partitioned_data.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.raw_data.arn
-}
-
-resource "aws_lambda_permission" "allow_partition_trigger" {
-  statement_id  = "AllowS3Invocation"
+# Permission for Partition Lambda
+resource "aws_lambda_permission" "allow_sqs_news_producer" {
+  statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.partition_consolidated_data.function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.raw_data.arn
 }
 
-# IAM Roles and Policies
+# Permission for SQS News Producer Lambda
+resource "aws_lambda_permission" "allow_partition_trigger" {
+  statement_id  = "AllowS3SQSInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sqs_news_producer.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.raw_data.arn
+}
+
+# SQS Queue
+resource "aws_sqs_queue" "stock_news_queue" {
+  name = "stock-news-queue"
+  visibility_timeout_seconds = 300
+}
+
+resource "aws_iam_policy" "sqs_read_policy" {
+  name = "sqs-read-policy${var.bucket_suffix}"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"],
+        Effect   = "Allow",
+        Resource = aws_sqs_queue.stock_news_queue.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "sqs_read_policy_attach" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.sqs_read_policy.arn
+}
+
+# IAM Role
 resource "aws_iam_role" "lambda_execution_role" {
   name = "lambda-execution-role${var.bucket_suffix}"
   assume_role_policy = jsonencode({
@@ -150,6 +214,7 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
+# IAM Policies
 resource "aws_iam_policy" "s3_read_write_policy" {
   name   = "s3-read-write-policy${var.bucket_suffix}"
   policy = jsonencode({
@@ -165,11 +230,6 @@ resource "aws_iam_policy" "s3_read_write_policy" {
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
-  role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = aws_iam_policy.s3_read_write_policy.arn
 }
 
 resource "aws_iam_policy" "lambda_logging_policy" {
@@ -189,6 +249,11 @@ resource "aws_iam_policy" "lambda_logging_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.s3_read_write_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logging_policy_attach" {

@@ -6,8 +6,13 @@ variable "region" {
   description = "The AWS region to deploy resources in"
   type        = string
 }
-variable "news_api_key" {
-  description = "API key for fetching news"
+variable "apca_api_key_id" {
+  description = "API key for id fetching news"
+  type        = string
+  sensitive   = true
+}
+variable "apca_api_secret_key" {
+  description = "API secret key for fetching news"
   type        = string
   sensitive   = true
 }
