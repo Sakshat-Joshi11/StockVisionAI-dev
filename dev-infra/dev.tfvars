@@ -1,4 +1,5 @@
 bucket_suffix = "-dev"
 region = "ap-south-1"
-news_api_key="DPk1e2sVliSG2BQ13hHDX1UmFBCSjbTTsaGcUjuT"
-news_api_url="https://api.marketaux.com/v1/news/all"
+apca_api_key_id="PKJZB25117QC6OYXPH75"
+apca_api_secret_key="bhZfXzjBAAfVuqHOpjEw5UDzBlf4tAMaRAvDwjNR"
+news_api_url="https://data.alpaca.markets/v1beta1/news"
