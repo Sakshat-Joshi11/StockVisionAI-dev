@@ -197,7 +197,7 @@ resource "aws_iam_role_policy_attachment" "sqs_read_policy_attach" {
   policy_arn = aws_iam_policy.sqs_read_policy.arn
 }
 
-# IAM Role
+# IAM Role : Lambda Execution 
 resource "aws_iam_role" "lambda_execution_role" {
   name = "lambda-execution-role${var.bucket_suffix}"
   assume_role_policy = jsonencode({
@@ -214,7 +214,7 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
-# IAM Policies
+# IAM Policies : S3 ReadWrite
 resource "aws_iam_policy" "s3_read_write_policy" {
   name   = "s3-read-write-policy${var.bucket_suffix}"
   policy = jsonencode({
@@ -276,4 +276,173 @@ resource "aws_cloudwatch_log_group" "process_stock_data_logs" {
 resource "aws_athena_database" "stock_analysis_dev" {
   name   = "stock_analysis_dev"
   bucket = aws_s3_bucket.processed_data.id
+}
+
+# Glue Crawler to clean Raw Partitioned Data
+resource "aws_glue_crawler" "partitioned_raw_crawler" {
+  name         = "partitioned_raw_crawler"
+  role         = aws_iam_role.glue_role.arn
+  database_name = aws_glue_catalog_database.partitioned_stock_data.name
+  description  = "Crawler for partitioned raw stock data"
+
+  s3_target {
+      path = "s3://stock-market-raw-data-dev/partitioned_raw/"
+    }
+  
+
+
+  table_prefix = "partitioned_raw_"
+
+  configuration = jsonencode({
+    "Version"    : 1.0,
+    "Grouping"   : {
+      "TableGroupingPolicy" : "CombineCompatibleSchemas"
+    }
+  })
+}
+
+# Glue Crawler for clean Raw Partitioned Data
+resource "aws_glue_crawler" "partitioned_cleaned_crawler" {
+  name         = "partitioned_cleaned_crawler"
+  role         = aws_iam_role.glue_role.arn
+  database_name = aws_glue_catalog_database.cleaned_partitioned_stock_data.name
+  description  = "Crawler for partitioned raw stock data"
+
+  s3_target {
+      path = "s3://stock-market-raw-data-dev/cleaned_partitioned_data/"
+    }
+  
+
+
+  table_prefix = "partitioned_cleaned_"
+
+  configuration = jsonencode({
+    "Version"    : 1.0,
+    "Grouping"   : {
+      "TableGroupingPolicy" : "CombineCompatibleSchemas"
+    }
+  })
+}
+resource "aws_glue_catalog_database" "partitioned_stock_data" {
+  name = "partitioned_stock_data"
+}
+resource "aws_glue_catalog_database" "cleaned_partitioned_stock_data" {
+  name = "cleaned_partitioned_stock_data"
+}
+
+resource "aws_iam_role" "glue_role" {
+  name = "glue-service-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "glue.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "glue_policy" {
+  name   = "glue-access-policy"
+  role   = aws_iam_role.glue_role.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   : "Allow",
+        Action   : [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ],
+        Resource : [
+          "arn:aws:s3:::stock-market-raw-data-dev",
+          "arn:aws:s3:::stock-market-raw-data-dev/*"
+        ]
+      },
+      {
+        Effect   : "Allow",
+        Action   : [
+          "glue:*",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource : "*"
+      }
+    ]
+  })
+}
+resource "aws_s3_object" "glue_etl_script" {
+  bucket = "stock-market-raw-data-dev"
+  key    = "scripts/normalize_stock_data.py"
+  source = "/Users/dev/Desktop/Programming/Devlopment/StockVisionAI/scripts/normalize_stock_data.py" 
+}
+
+resource "aws_glue_job" "etl_job" {
+  name        = "normalize-stock-data"
+  role_arn    = aws_iam_role.glue_etl_role.arn
+  command {
+    name            = "glueetl"
+    script_location = "s3://stock-market-raw-data-dev/scripts/normalize_stock_data.py"
+    python_version  = "3"
+  }
+
+  max_capacity        = 2  # Number of DPUs (adjust based on data size)
+  timeout             = 20 # Maximum runtime in minutes
+  default_arguments = {
+    "--job-bookmark-option" = "job-bookmark-enable"
+    "--TempDir"             = "s3://stock-market-raw-data-dev/temp/"
+  }
+
+  glue_version = "3.0"
+}
+resource "aws_iam_role" "glue_etl_role" {
+  name = "glue-etl-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = { Service = "glue.amazonaws.com" }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "glue_etl_policy" {
+  name        = "glue-etl-policy"
+  description = "Policy for Glue ETL Job"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::stock-market-raw-data-dev/*"
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "glue:*",
+          "logs:*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_glue_etl_policy" {
+  role       = aws_iam_role.glue_etl_role.name
+  policy_arn = aws_iam_policy.glue_etl_policy.arn
 }
