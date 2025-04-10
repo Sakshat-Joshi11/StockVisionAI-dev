@@ -5,3 +5,4 @@ venv/
 *.log
 config/
 .DS_Store
+StockVisionAI/
