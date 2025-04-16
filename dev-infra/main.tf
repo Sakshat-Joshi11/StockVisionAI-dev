@@ -446,3 +446,33 @@ resource "aws_iam_role_policy_attachment" "attach_glue_etl_policy" {
   role       = aws_iam_role.glue_etl_role.name
   policy_arn = aws_iam_policy.glue_etl_policy.arn
 }
+
+# NoteBook - SageMaker
+resource "aws_iam_role" "sagemaker_role" {
+  name               = "sagemaker-notebook-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "sagemaker.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "sagemaker_policy_attachment" {
+  role       = aws_iam_role.sagemaker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+}
+
+resource "aws_sagemaker_notebook_instance" "notebook" {
+  name                 = "stockvisionai-notebook"
+  instance_type        = "ml.t2.medium"  
+  role_arn             = aws_iam_role.sagemaker_role.arn
+
+  tags = {
+    Project = "StockVisionAI"
+  }
+}
