@@ -1,5 +1,0 @@
-bucket_suffix = "-dev"
-region = "ap-south-1"
-apca_api_key_id="PKJZB25117QC6OYXPH75"
-apca_api_secret_key="bhZfXzjBAAfVuqHOpjEw5UDzBlf4tAMaRAvDwjNR"
-news_api_url="https://data.alpaca.markets/v1beta1/news"
