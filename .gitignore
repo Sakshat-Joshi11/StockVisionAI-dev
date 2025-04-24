@@ -6,3 +6,4 @@ venv/
 config/
 .DS_Store
 StockVisionAI/
+dev.tfvars
